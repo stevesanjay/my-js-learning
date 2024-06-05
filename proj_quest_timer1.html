@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #timer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        #question {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<h2>JavaScript Timing</h2>
+
+<button onclick="startTimer()">start</button>
+<button id="stopButton" disabled>stop</button>
+<div id="question"></div>
+<div id="timer"></div>
+
+<script src="scripts.js"></script>
+
+<script>
+let timer;
+let display = document.getElementById('timer');
+let duration = 12; // Default duration in seconds in case JSON file is not available
+
+window.onload = function() {
+    fetch('endtime.json')
+        .then(response => response.json())
+        .then(data => {
+            let endTime = new Date(data.endTime);
+            let remainingTime = Math.floor((endTime - new Date()) / 1000);
+            if (remainingTime > 0) {
+                startTimer(remainingTime);
+            } else {
+                myFunction();
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching end time:', error);
+            startTimer(duration); // Fallback to default duration if JSON fetch fails
+        });
+};
+
+function startTimer(timeLeft) {
+    stopTimer(); // Ensure any existing timer is cleared
+
+    let endTime = new Date();
+    endTime.setSeconds(endTime.getSeconds() + timeLeft);
+    localStorage.setItem('endTimeJSON', JSON.stringify({ endTime: endTime.toISOString() }));
+
+    timer = setInterval(function() {
+        let remainingTime = Math.floor((new Date(endTime) - new Date()) / 1000);
+
+        let minutes = Math.floor(remainingTime / 60);
+        let seconds = remainingTime % 60;
+
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+
+        display.textContent = minutes + ':' + seconds;
+
+        if (remainingTime <= 0) {
+            clearInterval(timer);
+            myFunction();
+        }
+    }, 1000);
+
+    displayQuestion(); // Display the question when timer starts
+}
+
+function stopTimer() {
+    clearInterval(timer);
+    display.textContent = '';
+    localStorage.removeItem('endTimeJSON');
+}
+
+function myFunction() {
+    alert('Time is up!');
+    localStorage.removeItem('endTimeJSON');
+}
+</script>
+
+</body>
+</html>

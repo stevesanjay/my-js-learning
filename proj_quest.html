@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #timer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        #question {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<h2>JavaScript Timing</h2>
+
+<button onclick="startTimer()">start</button>
+<button onclick="stopTimer()">stop</button>
+<div id="question"></div>
+<div id="timer"></div>
+
+<script src="script.js"></script>
+
+<script>
+let timer;
+let duration = 10; // Duration in seconds
+let display = document.getElementById('timer');
+
+function startTimer() {
+    stopTimer(); // Ensure any existing timer is cleared
+    let remainingTime = duration;
+    
+    displayQuestion(); // Display the question when timer starts
+
+    timer = setInterval(function() {
+        let minutes = Math.floor(remainingTime / 60);
+        let seconds = remainingTime % 60;
+
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+
+        display.textContent = minutes + ':' + seconds;
+
+        if (--remainingTime < 0) {
+            clearInterval(timer);
+            myFunction();
+        }
+    }, 1000);
+}
+
+function stopTimer() {
+    clearInterval(timer);
+    display.textContent = '';
+}
+
+function myFunction() {
+    alert('Time is up!');
+}
+</script>
+
+</body>
+</html>

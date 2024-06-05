@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #timer {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<h2>JavaScript Timing</h2>
+
+<button onclick="startTimer()">Try it</button>
+
+<div id="timer"></div>
+
+<script>
+function startTimer() {
+    let duration = 10; // Duration in seconds
+    let display = document.getElementById('timer');
+
+    let timer = setInterval(function() {
+        let minutes = Math.floor(duration / 60);
+        let seconds = duration % 60;
+
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+
+        display.textContent = minutes + ':' + seconds;
+
+        if (--duration < 0) {
+            clearInterval(timer);
+            myFunction();
+        }
+    }, 1000);
+}
+
+function myFunction() {
+    alert('Time is up!');
+}
+</script>
+
+</body>
+</html>
