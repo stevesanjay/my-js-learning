@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>10-Second Timer</title>
     <style>
-        /* Styles for timer display, question display, and arrow buttons remain unchanged */
+        /* Styles for timer display, question display, and arrow buttons */
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
         #timer-container {
             position: fixed;
             top: 10px;
@@ -13,39 +23,27 @@
             font-size: 2em;
             font-weight: bold;
             color: #333;
+            z-index: 1;
         }
 
         #question-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 200px;
             font-size: 1.5em;
             text-align: center;
             margin-top: 50px;
-            padding: 0 20px;
         }
 
-        .arrow-button {
-            font-size: 2em;
-            cursor: pointer;
-            margin: 0;
-            flex: 1;
+        #controls {
             display: flex;
-            justify-content: center;
-            align-items: center;
+            justify-content: space-between;
+            width: 200px;
+            margin-top: 20px;
         }
 
-        #left-arrow.disabled {
-            color: #ccc;
-            pointer-events: none;
-        }
-
-        /* New style for the record button */
-        #record-button {
+        #prev-button,
+        #next-button {
             font-size: 1.5em;
             cursor: pointer;
-            background-color: #4CAF50;
+            background-color: #23b828;
             color: white;
             border: none;
             border-radius: 5px;
@@ -53,39 +51,28 @@
             text-align: center;
             text-decoration: none;
             display: inline-block;
-            margin-top: 20px;
+        }
+        #prev-button {
+            position: absolute; /* Positioning the prev button */
+            right: 1000px;
         }
 
-        /* Visual indicator for audio recording */
-        #recording-indicator {
-            width: 10px;
-            height: 10px;
-            background-color: red;
-            border-radius: 50%;
-            margin-left: 5px;
-            display: none;
+        #next-button {
+            position: absolute; /* Positioning the next button */
+            left: 1000px;
         }
     </style>
 </head>
 <body>
-    <!-- Timer display -->
     <div id="timer-container">
-        Time Left: <span id="timer">10</span> seconds
+        <div id="timer">10</div>
     </div>
-    <!-- Container for displaying questions -->
     <div id="question-container"></div>
-    <!-- Question navigation controls -->
-    <div id="question-controls">
-        <span id="left-arrow" class="arrow-button disabled">&#9664; Previous</span>
-        <span id="right-arrow" class="arrow-button">Next &#9654;</span>
+    <div id="controls">
+        <button id="prev-button" disabled>&#8592;</button>
+        <button id="next-button">&#8594;</button>
     </div>
-    <!-- Record button -->
-    <button id="record-button">Record</button>
-    <!-- Visual indicator for audio recording -->
-    <div id="recording-indicator"></div>
-    <!-- External libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <!-- Script for timer functionality -->
     <script src="timer.js"></script>
 </body>
 </html>

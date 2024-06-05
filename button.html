@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10-Second Timer</title>
+    <style>
+        /* Styles for timer display, question display, and arrow buttons */
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            position: relative;
+        }
+
+        #timer-container {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            z-index: 1;
+        }
+
+        #question-container {
+            font-size: 1.5em;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #controls {
+            display: flex;
+            justify-content: center; /* Centering the controls */
+            align-items: center;
+            width: 100%;
+            position: absolute;
+            bottom: 20px;
+        }
+
+        #prev-button,
+        #next-button {
+            font-size: 1.5em;
+            cursor: pointer;
+            background-color: #23b828;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0 20px; /* Added margin for spacing */
+        }
+
+        #record-button {
+            font-size: 1.5em;
+            cursor: pointer;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0 20px; /* Added margin for spacing */
+        }
+
+        /* Visual indicator for audio recording */
+        #recording-indicator {
+            width: 10px;
+            height: 10px;
+            background-color: red;
+            border-radius: 50%;
+            margin-left: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="timer-container">
+        <div id="timer">10</div>
+    </div>
+    <div id="question-container"></div>
+    <div id="controls">
+        <button id="prev-button" disabled>&#8592;</button>
+        <button id="record-button">&#9679; Record</button>
+        <button id="next-button">&#8594;</button>
+        <div id="recording-indicator"></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        let timerInterval;
+        let timeLeft;
+        let totalDuration;
+        let questions = [];
+        let currentQuestionIndex = 0;
+
+        const displayQuestion = () => {
+            const questionContainer = document.getElementById('question-container');
+            questionContainer.textContent = questions[currentQuestionIndex];
+        }
+
+        const updateTimer = () => {
+            document.getElementById('timer').textContent = timeLeft;
+
+            if (timeLeft > 0) {
+                timeLeft--;
+            } else {
+                clearInterval(timerInterval);
+                alert("Time's up!");
+            }
+        };
+
+        const startTimer = (duration) => {
+            timeLeft = duration;
+            timerInterval = setInterval(updateTimer, 1000);
+        };
+
+        fetch('timer.json')
+            .then(response => response.json())
+            .then(data => {
+                const startTime = new Date(data.startTime);
+                const endTime = new Date(data.endTime);
+                totalDuration = (endTime - startTime) / 1000;
+                startTimer(totalDuration);
+            })
+            .catch(error => {
+                console.error('Error fetching the timer data:', error);
+            });
+
+        fetch('questions.csv')
+            .then(response => response.text())
+            .then(csvText => {
+                Papa.parse(csvText, {
+                    header: true,
+                    complete: function(results) {
+                        questions = results.data.map(row => row.Question);
+                        displayQuestion();
+                    },
+                    error: function(error) {
+                        console.error('Error parsing CSV:', error);
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching the questions:', error);
+            });
+
+        document.getElementById('next-button').addEventListener('click', () => {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion();
+            }
+        });
+
+        document.getElementById('prev-button').addEventListener('click', () => {
+            // Previous button should always be disabled
+        });
+
+        let mediaRecorder;
+        let audioChunks = [];
+
+        const startRecording = () => {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.start();
+                    mediaRecorder.addEventListener("dataavailable", event => {
+                        audioChunks.push(event.data);
+                    });
+                    document.getElementById("record-button").textContent = "Stop Recording";
+                    document.getElementById("recording-indicator").style.display = "inline-block";
+                })
+                .catch(error => console.error("Error starting recording: ", error));
+        };
+
+        const stopRecording = () => {
+            mediaRecorder.stop();
+            mediaRecorder.addEventListener("stop", () => {
+                const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audioDownloadLink = document.createElement("a");
+                audioDownloadLink.href = audioUrl;
+                audioDownloadLink.download = "recorded_audio.wav";
+                audioDownloadLink.click();
+                audioChunks = [];
+                document.getElementById("record-button").textContent = "Record";
+                document.getElementById("recording-indicator").style.display = "none";
+            });
+        };
+
+        document.getElementById("record-button").addEventListener("click", () => {
+            if (document.getElementById("record-button").textContent === "Record") {
+                startRecording();
+            } else {
+                stopRecording();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,12 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>10-Second Timer</title>
+    <title>20-Second Timer</title>
     <style>
-        /* Styles for timer display, question display, and arrow buttons */
         body {
             display: flex;
             flex-direction: column;
@@ -14,6 +12,7 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            position: relative;
         }
 
         #timer-container {
@@ -34,9 +33,11 @@
 
         #controls {
             display: flex;
-            justify-content: space-between;
-            width: 200px;
-            margin-top: 20px;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            position: absolute;
+            bottom: 200px;
         }
 
         #prev-button,
@@ -51,28 +52,51 @@
             text-align: center;
             text-decoration: none;
             display: inline-block;
-        }
-        #prev-button {
-            position: absolute; /* Positioning the prev button */
-            right: 1000px;
+            margin: 0 20px;
         }
 
-        #next-button {
-            position: absolute; /* Positioning the next button */
-            left: 1000px;
+        #start-record-button,
+        #stop-record-button {
+            font-size: 1.5em;
+            cursor: pointer;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0 20px;
+        }
+
+        #stop-record-button {
+            background-color: #888888;
+        }
+
+        #recording-indicator {
+            width: 10px;
+            height: 10px;
+            background-color: red;
+            border-radius: 50%;
+            margin-left: 5px;
+            display: none;
         }
     </style>
 </head>
 <body>
     <div id="timer-container">
-        <div id="timer">10</div>
+        <div id="timer">15</div>
     </div>
     <div id="question-container"></div>
     <div id="controls">
         <button id="prev-button" disabled>&#8592;</button>
+        <button id="start-record-button">Start Recording</button>
+        <button id="stop-record-button" disabled>Stop Recording</button>
         <button id="next-button">&#8594;</button>
+        <div id="recording-indicator"></div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <script src="timer.js"></script>
+    <script src="{{ url_for('static', filename='timer.js') }}"></script>
 </body>
 </html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audio Waveform Visualizer</title>
+<style>
+    canvas {
+        display: block;
+        margin: auto;
+        border: 1px solid black;
+    }
+</style>
+</head>
+<body>
+<h1>Audio Waveform Visualizer</h1>
+<canvas id="waveform" width="800" height="200"></canvas>
+<button id="startButton">Start Recording</button>
+<script>
+window.onload = function() {
+    const canvas = document.getElementById('waveform');
+    const context = canvas.getContext('2d');
+    let audioContext;
+    let analyser;
+
+    // Function to initialize audio processing
+    function initializeAudio() {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
+
+        // Request access to the user's microphone
+        navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function(stream) {
+            const source = audioContext.createMediaStreamSource(stream);
+            source.connect(analyser);
+
+            // Setup drawing
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+
+            function draw() {
+                requestAnimationFrame(draw);
+
+                analyser.getByteTimeDomainData(dataArray);
+
+                context.fillStyle = 'rgb(200, 200, 200)';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+
+                context.lineWidth = 2;
+                context.strokeStyle = 'rgb(0, 0, 0)';
+
+                context.beginPath();
+
+                const sliceWidth = canvas.width * 1.0 / bufferLength;
+                let x = 0;
+
+                for (let i = 0; i < bufferLength; i++) {
+                    const v = dataArray[i] / 128.0;
+                    const y = v * canvas.height / 2;
+
+                    if (i === 0) {
+                        context.moveTo(x, y);
+                    } else {
+                        context.lineTo(x, y);
+                    }
+
+                    x += sliceWidth;
+                }
+
+                context.lineTo(canvas.width, canvas.height / 2);
+                context.stroke();
+            }
+
+            draw();
+        })
+        .catch(function(err) {
+            console.error('Error accessing microphone:', err);
+        });
+    }
+
+    // Event listener for the start button
+    document.getElementById('startButton').addEventListener('click', function() {
+        if (!audioContext) {
+            initializeAudio();
+        } else {
+            audioContext.resume().then(function() {
+                console.log('AudioContext resumed');
+            });
+        }
+    });
+};
+</script>
+</body>
+</html>

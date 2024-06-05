@@ -2,7 +2,7 @@ let timerInterval;
 let timeLeft;
 let totalDuration;
 let questions = [];
-let currentQuestionIndex = 0; // Added to keep track of the current question index
+let currentQuestionIndex = 0;
 
 // Function to display a question
 const displayQuestion = () => {
@@ -32,14 +32,9 @@ const startTimer = (duration) => {
 fetch('timer.json')
     .then(response => response.json())
     .then(data => {
-        // Parse the start and end times
         const startTime = new Date(data.startTime);
         const endTime = new Date(data.endTime);
-
-        // Calculate the total duration in seconds
         totalDuration = (endTime - startTime) / 1000;
-
-        // Start the timer automatically
         startTimer(totalDuration);
     })
     .catch(error => {
@@ -54,7 +49,7 @@ fetch('questions.csv')
             header: true,
             complete: function(results) {
                 questions = results.data.map(row => row.Question);
-                displayQuestion(); // Display the first question once questions are loaded
+                displayQuestion();
             },
             error: function(error) {
                 console.error('Error parsing CSV:', error);
@@ -70,9 +65,50 @@ document.getElementById('next-button').addEventListener('click', () => {
     if (currentQuestionIndex < questions.length - 1) {
         currentQuestionIndex++;
         displayQuestion();
-        document.getElementById('prev-button').disabled = false; // Enable the prev button
     }
-    if (currentQuestionIndex === questions.length - 1) {
-        document.getElementById('next-button').disabled = true; // Disable next button if last question
+});
+
+// Prev button functionality
+document.getElementById('prev-button').addEventListener('click', () => {
+    // Previous button should always be disabled
+});
+
+let mediaRecorder;
+let audioChunks = [];
+
+const startRecording = () => {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
+            mediaRecorder.addEventListener("dataavailable", event => {
+                audioChunks.push(event.data);
+            });
+            document.getElementById("record-button").textContent = "Stop Recording";
+            document.getElementById("recording-indicator").style.display = "inline-block";
+        })
+        .catch(error => console.error("Error starting recording: ", error));
+};
+
+const stopRecording = () => {
+    mediaRecorder.stop();
+    mediaRecorder.addEventListener("stop", () => {
+        const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audioDownloadLink = document.createElement("a");
+        audioDownloadLink.href = audioUrl;
+        audioDownloadLink.download = "recorded_audio.wav";
+        audioDownloadLink.click();
+        audioChunks = [];
+        document.getElementById("record-button").textContent = "Record";
+        document.getElementById("recording-indicator").style.display = "none";
+    });
+};
+
+document.getElementById("record-button").addEventListener("click", () => {
+    if (document.getElementById("record-button").textContent === "Record") {
+        startRecording();
+    } else {
+        stopRecording();
     }
 });
